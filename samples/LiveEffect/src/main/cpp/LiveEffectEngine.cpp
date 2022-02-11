@@ -61,8 +61,9 @@ bool LiveEffectEngine::setEffectOn(bool isOn) {
 
 void LiveEffectEngine::loadPlugin() {
     state.sample_rate = mSampleRate ; // am I devops or what
-    plugin_init(&state, "libamp.so", 0);
-    LOGD("Loaded plugin %s\n", state.descriptor->Name);
+//    if (plugin_init(&state, "libamp.so", 0))
+    if (!plugin_init(&state, "libdelay.so", 0))
+        LOGD("Loaded plugin %s\n", state.descriptor->Name);
 }
 
 void LiveEffectEngine::closeStreams() {

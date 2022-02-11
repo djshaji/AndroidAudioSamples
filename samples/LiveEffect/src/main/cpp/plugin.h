@@ -25,7 +25,7 @@ typedef struct {
     unsigned long sample_rate ;
 } state_t;
 
-extern int plugin_init (state_t *state, const char * plugin_file, int index) ;
+extern int plugin_init (state_t *state, const char * plugin_file, unsigned long plugin_no) ;
 extern int plugin_connect_ports (state_t * state) ;
 
 #ifdef __cplusplus

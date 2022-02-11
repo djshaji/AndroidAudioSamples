@@ -9,7 +9,7 @@
 
 #define APPNAME "Plugin"
 
-int plugin_init (state_t *state, const char * plugin_file, int index)
+int plugin_init (state_t *state, const char * plugin_file, unsigned long plugin_no)
 {
     /*	Load a LADSPA descriptor from shared library */
 //    const char *error;
@@ -25,24 +25,60 @@ int plugin_init (state_t *state, const char * plugin_file, int index)
         return err;
     }
 
+    LOGD("dlopen [ok]! Going to look for descriptor...\n");
+
     //~ *(void **)(&f) = dlsym (handle, "ladspa_descriptor") ;
     //~ (*f) ();
 
-    LADSPA_Descriptor_Function fDescriptorFunction;
-    dlerror();
+    LADSPA_Descriptor *(* fDescriptorFunction)(unsigned long plugin_no);
+//    dlerror();
 
-    fDescriptorFunction = (LADSPA_Descriptor_Function)dlsym(handle,
+    fDescriptorFunction = (LADSPA_Descriptor *(*)(unsigned long))dlsym(handle,
                                                             "ladspa_descriptor");
 
 //    const LADSPA_Descriptor * psDescriptor;
 //    LADSPA_Descriptor_Function pfDescriptorFunction;
 
-    state -> descriptor = fDescriptorFunction (0);
+    if (fDescriptorFunction == NULL) {
+        err = -1 ;
+        LOGE("Failed to load shared library %s: %s\n", plugin_file, dlerror());
+        return err ;
+    } else {
+        LOGD("LADSPA descriptor function [ok]! Going to look for descriptor ...\n");
+    }
+
+    state -> descriptor = fDescriptorFunction (plugin_no);
+    if (state -> descriptor == NULL) {
+        LOGE("Failed to load descriptor from plugin! Descriptor returned NULL at %lu. Possible error %s\n", plugin_no, dlerror());
+        return 1 ;
+    }
+
+    LOGD("Descriptor loaded [ok]. Going to instantiate plugin...\n");
+
+    if (state -> descriptor -> instantiate == NULL) {
+        LOGE("Instantiate returned null. Something is wrong!\n[plugin] %s -> %s | %lu",
+             plugin_file, state -> descriptor -> Label, plugin_no);
+        return 1 ;
+    }
+
+    LOGV("descriptor %s, sample rate %lu\n", state -> descriptor -> Label, state -> sample_rate);
     state -> handle = state -> descriptor -> instantiate (state -> descriptor, state -> sample_rate) ;
+    LOGV("instantiate [ok]\n");
     if (state -> handle == NULL) {
         LOGE("Unable to instantiate plugin: returned NULL\n");
+        return 1 ;
     } else
-        LOGD("Successfully instantiated plugin at %lu, you bloody bastard!\n", state -> sample_rate);
+        LOGD("Successfully instantiated %s at %lu of %s [ok]. Going to activate plugin ...\n",
+             state -> descriptor -> Label,
+             state -> sample_rate,
+             plugin_file);
+
+    //      activate is null for our sample plugin.
+    if (state -> descriptor -> activate != NULL) {
+        state -> descriptor -> activate (state -> handle);
+        LOGD("Plugin activated: %s\n", state -> descriptor -> Name);
+    }
+
     return err;
 }
 

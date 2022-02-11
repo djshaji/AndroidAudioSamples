@@ -37,4 +37,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation project(':audio-device')
     implementation project(path: ':LiveEffect:amp')
+    implementation project(path: ':LiveEffect:delay')
+    implementation project(path: ':LiveEffect:filter')
+    implementation project(path: ':LiveEffect:sine')
 }

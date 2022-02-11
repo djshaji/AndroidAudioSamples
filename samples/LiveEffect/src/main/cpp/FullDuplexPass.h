@@ -72,12 +72,25 @@ public:
          *  by playing with it
          */
 
-        float control = 6 ;
-        state -> descriptor -> connect_port (state -> handle, 0, &control);
-        state -> descriptor -> connect_port (state -> handle, 1, (LADSPA_Data *) inputData);
-        state -> descriptor -> connect_port (state -> handle, 2, (LADSPA_Data *) outputData);
-//      activate is null for our sample plugin.
-//        state -> descriptor -> activate (state -> handle);
+        /*  Important lesson here
+         *  So listen up folks.
+         *  Apparently it is necessary to cast variable types to their *proper*
+         *  data types, else segmentation faults happen.
+         */
+
+//        float *control = reinterpret_cast<float *>(1);
+        LADSPA_Data dry_wet = 0.1 ;
+        LADSPA_Data delay_time = 1.0 ;
+//        if (state -> descriptor == NULL) {
+//            LOGE("Plugin descriptor is null\n");
+//        }
+
+//        LADSPA_Data cutoff = 60 ;
+        state -> descriptor -> connect_port (state -> handle, 0, &delay_time);
+        state -> descriptor -> connect_port (state -> handle, 1, &dry_wet);
+        state -> descriptor -> connect_port (state -> handle, 2, (LADSPA_Data *) inputData);
+        state -> descriptor -> connect_port (state -> handle, 3, (LADSPA_Data *) outputData);
+//
         state -> descriptor -> run (state -> handle, samplesToProcess);
 
         // If there are fewer input samples then clear the rest of the buffer.
