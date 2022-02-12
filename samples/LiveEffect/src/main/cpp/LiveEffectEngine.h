@@ -26,7 +26,7 @@
 
 class LiveEffectEngine : public oboe::AudioStreamCallback {
 public:
-    state_t state ;
+    state_t *         pluginState = NULL;
     LiveEffectEngine();
 
     void setRecordingDeviceId(int32_t deviceId);
@@ -52,7 +52,7 @@ public:
 
     bool setAudioApi(oboe::AudioApi);
     bool isAAudioRecommended(void);
-    void loadPlugin (void);
+    state_t * loadPlugin (void);
 
 private:
     FullDuplexPass    mFullDuplexPass;

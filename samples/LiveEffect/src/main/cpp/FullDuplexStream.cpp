@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "logging_macros.h"
 #include "FullDuplexStream.h"
 
 oboe::DataCallbackResult FullDuplexStream::onAudioReady(
@@ -85,6 +86,7 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
 }
 
 oboe::Result FullDuplexStream::start() {
+    IN ;
     mCountCallbacksToDrain = kNumCallbacksToDrain;
     mCountInputBurstsCushion = mNumInputBurstsCushion;
     mCountCallbacksToDiscard = kNumCallbacksToDiscard;
@@ -100,10 +102,13 @@ oboe::Result FullDuplexStream::start() {
     if (result != oboe::Result::OK) {
         return result;
     }
+
+    OUT ;
     return mOutputStream->requestStart();
 }
 
 oboe::Result FullDuplexStream::stop() {
+    IN ;
     oboe::Result outputResult = oboe::Result::OK;
     oboe::Result inputResult = oboe::Result::OK;
     if (mOutputStream) {
@@ -112,6 +117,8 @@ oboe::Result FullDuplexStream::stop() {
     if (mInputStream) {
         inputResult = mInputStream->requestStop();
     }
+
+    OUT ;
     if (outputResult != oboe::Result::OK) {
         return outputResult;
     } else {

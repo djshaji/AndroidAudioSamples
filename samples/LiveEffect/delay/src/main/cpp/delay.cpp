@@ -228,9 +228,9 @@ cleanupSimpleDelayLine(LADSPA_Handle Instance) {
 static LADSPA_Descriptor * g_psDescriptor = NULL;
 
 /*****************************************************************************/
-
+#ifdef __cplusplus
 /* Called automatically when the plugin library is first loaded. */
-ON_LOAD_ROUTINE {
+void __attribute__ ((constructor)) ON_LOAD_ROUTINE () {
 
 char ** pcPortNames;
 LADSPA_PortDescriptor * piPortDescriptors;
@@ -323,7 +323,7 @@ g_psDescriptor->cleanup
 /*****************************************************************************/
 
 /* Called automatically when the library is unloaded. */
-ON_UNLOAD_ROUTINE {
+void __attribute__ ((constructor)) ON_UNLOAD_ROUTINE () {
 long lIndex;
 if (g_psDescriptor) {
 free((char *)g_psDescriptor->Label);
@@ -338,7 +338,7 @@ free((LADSPA_PortRangeHint *)g_psDescriptor->PortRangeHints);
 free(g_psDescriptor);
 }
 }
-
+#endif
 /*****************************************************************************/
 
 /* Return a descriptor of the requested plugin type. Only one plugin

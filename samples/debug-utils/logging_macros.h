@@ -23,6 +23,10 @@
 #define MODULE_NAME  "AUDIO-APP"
 #endif
 
+// shaji
+#define IN __android_log_print(ANDROID_LOG_VERBOSE, MODULE_NAME, ">> [%s]\n", __PRETTY_FUNCTION__);
+#define OUT __android_log_print(ANDROID_LOG_VERBOSE, MODULE_NAME, "<< [%s]\n", __PRETTY_FUNCTION__);
+
 #define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, MODULE_NAME, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, MODULE_NAME, __VA_ARGS__)
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, MODULE_NAME, __VA_ARGS__)

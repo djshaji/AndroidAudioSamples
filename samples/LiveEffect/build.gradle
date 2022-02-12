@@ -40,4 +40,5 @@ dependencies {
     implementation project(path: ':LiveEffect:delay')
     implementation project(path: ':LiveEffect:filter')
     implementation project(path: ':LiveEffect:sine')
+    implementation project(path: ':LiveEffect:noise')
 }

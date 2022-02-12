@@ -17,12 +17,36 @@
 #ifndef SAMPLES_FULLDUPLEXPASS_H
 #define SAMPLES_FULLDUPLEXPASS_H
 
+#include <dlfcn.h>
 #include "FullDuplexStream.h"
 #include "plugin.h"
 
 class FullDuplexPass : public FullDuplexStream {
 public:
-    state_t * state ;
+    state_t * duplexPluginState = NULL;
+    void set_plugin (state_t * s) {
+        this -> duplexPluginState = s ;
+        return ;
+    }
+
+    state_t * get_plugin (void) {
+        return this -> duplexPluginState ;
+    }
+
+    /*
+    void loadPlugin1(state_t  * ptr) {
+        IN ;
+        //! TODO: Free this memory!
+//    ptr = static_cast<state_t *>(malloc(sizeof(state_t)));
+        ptr -> sample_rate = mSampleRate ; // am I devops or what
+//    if (plugin_init(&ptr, "libamp.so", 0))
+        if (!plugin_init(ptr, "libnoise.so", 0))
+            LOGD("Loaded plugin %s\n", ptr -> descriptor->Name);
+
+        OUT ;
+    }
+     */
+
     virtual oboe::DataCallbackResult
     onBothStreamsReady(
             std::shared_ptr<oboe::AudioStream> inputStream,
@@ -31,6 +55,26 @@ public:
             std::shared_ptr<oboe::AudioStream> outputStream,
             void *outputData,
             int   numOutputFrames) {
+//        IN ;
+
+        /*
+        LADSPA_Descriptor_Function fDescriptorFunction ;
+        *(void**)(&fDescriptorFunction) = dlsym(duplexPluginState -> library, "ladspa_descriptor");
+        const LADSPA_Descriptor *descriptor = fDescriptorFunction (duplexPluginState -> plugin_index);
+        LOGE("[plugin] %s\n", descriptor -> Label);
+        */
+
+        /*
+        if (duplexPluginState == NULL) {
+            LOGE("Loading shared library\n");
+            duplexPluginState = static_cast<state_t *>(malloc(sizeof(state_t)));
+            duplexPluginState -> sample_rate = 48000 ; // am I devops or what
+            if (!plugin_init(duplexPluginState, "libnoise.so", 0))
+                LOGD("Loaded plugin %s\n", duplexPluginState -> descriptor->Name);
+
+        }*/
+
+        LOGE("[%lu] plugin is %s\n", duplexPluginState -> sample_rate, duplexPluginState -> Label);
         // Copy the input samples to the output with a little arbitrary gain change.
 
         // This code assumes the data format for both streams is Float.
@@ -79,19 +123,23 @@ public:
          */
 
 //        float *control = reinterpret_cast<float *>(1);
-        LADSPA_Data dry_wet = 0.1 ;
-        LADSPA_Data delay_time = 1.0 ;
+//        LADSPA_Data dry_wet = 0.1 ;
+//        LADSPA_Data delay_time = 1.0 ;
 //        if (state -> descriptor == NULL) {
 //            LOGE("Plugin descriptor is null\n");
 //        }
 
 //        LADSPA_Data cutoff = 60 ;
-        state -> descriptor -> connect_port (state -> handle, 0, &delay_time);
-        state -> descriptor -> connect_port (state -> handle, 1, &dry_wet);
-        state -> descriptor -> connect_port (state -> handle, 2, (LADSPA_Data *) inputData);
-        state -> descriptor -> connect_port (state -> handle, 3, (LADSPA_Data *) outputData);
-//
-        state -> descriptor -> run (state -> handle, samplesToProcess);
+
+        LADSPA_Data  amplitude = 1 ;
+        duplexPluginState -> connect_port (duplexPluginState -> handle, 0, &amplitude);
+//        duplexPluginState -> connect_port (duplexPluginState -> handle, 1, &dry_wet);
+//        state -> descriptor -> connect_port (state -> handle, 2, (LADSPA_Data *) inputData);
+        duplexPluginState -> connect_port (duplexPluginState -> handle, 1, (LADSPA_Data *) outputData);
+
+//        if (state->descriptor->activate)
+//            state->descriptor->activate(state->handle);
+        duplexPluginState -> run (duplexPluginState -> handle, samplesToProcess);
 
         // If there are fewer input samples then clear the rest of the buffer.
         int32_t samplesLeft = numOutputSamples - numInputSamples;
@@ -99,6 +147,7 @@ public:
             *outputFloats++ = 0.0; // silence
         }
 
+//        OUT ;
         return oboe::DataCallbackResult::Continue;
     }
 };

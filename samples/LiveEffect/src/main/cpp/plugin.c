@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <logging_macros.h>
 #include <stdio.h>
+#include <string.h>
 #include "ladspa.h"
 #include "plugin.h"
 
@@ -11,6 +12,7 @@
 
 int plugin_init (state_t *state, const char * plugin_file, unsigned long plugin_no)
 {
+    IN ;
     /*	Load a LADSPA descriptor from shared library */
 //    const char *error;
 
@@ -18,8 +20,10 @@ int plugin_init (state_t *state, const char * plugin_file, unsigned long plugin_
 
     int err = 0;
 
-    void* handle = dlopen(plugin_file, RTLD_LAZY);
-    if (handle == NULL) {
+    // This "handle" is used again to initiate the plugin later on.
+    // Could *this* be the casue of the problem?
+    state -> library = dlopen(plugin_file, RTLD_LAZY);
+    if (state -> library == NULL) {
         __android_log_print(ANDROID_LOG_ERROR, APPNAME, "Failed to load library: %s\n", dlerror ());
         err = 1 ;
         return err;
@@ -30,12 +34,11 @@ int plugin_init (state_t *state, const char * plugin_file, unsigned long plugin_
     //~ *(void **)(&f) = dlsym (handle, "ladspa_descriptor") ;
     //~ (*f) ();
 
-    LADSPA_Descriptor *(* fDescriptorFunction)(unsigned long plugin_no);
-//    dlerror();
+//    LADSPA_Descriptor *(* fDescriptorFunction)(unsigned long plugin_no);
+//    fDescriptorFunction = (LADSPA_Descriptor *(*)(unsigned long))dlsym(state -> library,
+//                                                            "ladspa_descriptor");
 
-    fDescriptorFunction = (LADSPA_Descriptor *(*)(unsigned long))dlsym(handle,
-                                                            "ladspa_descriptor");
-
+    LADSPA_Descriptor_Function fDescriptorFunction = dlsym(state -> library, "ladspa_descriptor");
 //    const LADSPA_Descriptor * psDescriptor;
 //    LADSPA_Descriptor_Function pfDescriptorFunction;
 
@@ -79,6 +82,18 @@ int plugin_init (state_t *state, const char * plugin_file, unsigned long plugin_
         LOGD("Plugin activated: %s\n", state -> descriptor -> Name);
     }
 
+    /// TODO: Free this memory!
+    state -> plugin_file = strdup (plugin_file);
+    state -> plugin_index = plugin_no ;
+
+    // Some direct references
+    state -> connect_port = state -> descriptor -> connect_port ;
+    state -> run = state -> descriptor -> run ;
+    state -> activate = state -> descriptor -> activate ;
+    state -> Name = state -> descriptor -> Name ;
+    state -> Label = state -> descriptor -> Label ;
+
+    OUT ;
     return err;
 }
 

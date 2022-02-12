@@ -20,7 +20,13 @@
 #include "LiveEffectEngine.h"
 
 LiveEffectEngine::LiveEffectEngine() {
+    IN ;
     assert(mOutputChannelCount == mInputChannelCount);
+
+//    pluginState = loadPlugin();
+//    LOGD("%s loadPlugin [ok]: %s %s\n", __PRETTY_FUNCTION__ , pluginState -> descriptor -> Label, pluginState -> descriptor -> Name);
+
+    OUT ;
 }
 
 void LiveEffectEngine::setRecordingDeviceId(int32_t deviceId) {
@@ -42,6 +48,7 @@ bool LiveEffectEngine::setAudioApi(oboe::AudioApi api) {
 }
 
 bool LiveEffectEngine::setEffectOn(bool isOn) {
+    IN ;
     bool success = true;
     if (isOn != mIsEffectOn) {
         if (isOn) {
@@ -56,17 +63,28 @@ bool LiveEffectEngine::setEffectOn(bool isOn) {
             mIsEffectOn = isOn;
        }
     }
+
+    LOGV("plugin here: %s\n", pluginState -> descriptor -> Name);
+    OUT ;
     return success;
 }
 
-void LiveEffectEngine::loadPlugin() {
-    state.sample_rate = mSampleRate ; // am I devops or what
-//    if (plugin_init(&state, "libamp.so", 0))
-    if (!plugin_init(&state, "libdelay.so", 0))
-        LOGD("Loaded plugin %s\n", state.descriptor->Name);
+state_t * LiveEffectEngine::loadPlugin() {
+    IN ;
+    //! TODO: Free this memory!
+//    ptr = static_cast<state_t *>(malloc(sizeof(state_t)));
+    state_t  * ptr = static_cast<state_t *>(malloc(sizeof(state_t)));
+    ptr -> sample_rate = mSampleRate ; // am I devops or what
+//    if (plugin_init(&ptr, "libamp.so", 0))
+    if (!plugin_init(ptr, "libnoise.so", 0))
+        LOGD("Loaded plugin %s\n", ptr -> descriptor->Name);
+
+    OUT ;
+    return ptr ;
 }
 
 void LiveEffectEngine::closeStreams() {
+    IN ;
     /*
     * Note: The order of events is important here.
     * The playback stream must be closed before the recording stream. If the
@@ -83,6 +101,7 @@ void LiveEffectEngine::closeStreams() {
 }
 
 oboe::Result  LiveEffectEngine::openStreams() {
+    IN ;
     // Note: The order of stream creation is important. We create the playback
     // stream first, then use properties from the playback stream
     // (e.g. sample rate) to create the recording stream. By matching the
@@ -93,6 +112,7 @@ oboe::Result  LiveEffectEngine::openStreams() {
     if (result != oboe::Result::OK) {
         LOGE("Failed to open output stream. Error %s", oboe::convertToText(result));
         mSampleRate = oboe::kUnspecified;
+        OUT ;
         return result;
     } else {
         // The input stream needs to run at the same sample rate as the output.
@@ -105,6 +125,7 @@ oboe::Result  LiveEffectEngine::openStreams() {
     if (result != oboe::Result::OK) {
         LOGE("Failed to open input stream. Error %s", oboe::convertToText(result));
         closeStream(mPlayStream);
+        OUT ;
         return result;
     }
     warnIfNotLowLatency(mRecordingStream);
@@ -113,9 +134,18 @@ oboe::Result  LiveEffectEngine::openStreams() {
     mFullDuplexPass.setOutputStream(mPlayStream);
 
     // Load LADSPA Plugin here
-    loadPlugin() ;
 
-    mFullDuplexPass . state = &state ;
+    LOGV("Checking if plugin state is null ...\n");
+    if (mFullDuplexPass.duplexPluginState == NULL) {
+        LOGV("Assinging plugin\n");
+        mFullDuplexPass .duplexPluginState = loadPlugin();
+        pluginState = mFullDuplexPass.duplexPluginState;
+    } else {
+        LOGV("It isn't ... already loaded %s\n", mFullDuplexPass.duplexPluginState -> descriptor -> Name);
+    }
+
+    LOGD("%s loadPlugin [ok]: %s %s\n", __PRETTY_FUNCTION__ , mFullDuplexPass .get_plugin() -> descriptor -> Label, mFullDuplexPass .get_plugin() -> descriptor -> Name);
+    OUT ;
     return result;
 }
 
@@ -181,6 +211,7 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupCommonStreamParameters(
  * @param stream the stream to close
  */
 void LiveEffectEngine::closeStream(std::shared_ptr<oboe::AudioStream> &stream) {
+    IN ;
     if (stream) {
         oboe::Result result = stream->stop();
         if (result != oboe::Result::OK) {
@@ -194,6 +225,8 @@ void LiveEffectEngine::closeStream(std::shared_ptr<oboe::AudioStream> &stream) {
         }
         stream.reset();
     }
+
+    OUT ;
 }
 
 /**

@@ -14,6 +14,8 @@ typedef struct {
 
 typedef struct {
     char * plugin_file ;
+    const char * Name, * Label ;
+    unsigned long plugin_index ;
     char *client_name;
     const char **port_names; /* indexed by the LADSPA port index */
     unsigned long num_control_ports; /* input control ports */
@@ -23,6 +25,16 @@ typedef struct {
     const LADSPA_Descriptor *descriptor;
     void *library;
     unsigned long sample_rate ;
+
+    void (*connect_port)(LADSPA_Handle Instance,
+                         unsigned long Port,
+                         LADSPA_Data * DataLocation);
+    void (*activate)(LADSPA_Handle Instance);
+    void (*run)(LADSPA_Handle Instance,
+                unsigned long SampleCount);
+    void (*run_adding)(LADSPA_Handle Instance,
+                       unsigned long SampleCount);
+
 } state_t;
 
 extern int plugin_init (state_t *state, const char * plugin_file, unsigned long plugin_no) ;
