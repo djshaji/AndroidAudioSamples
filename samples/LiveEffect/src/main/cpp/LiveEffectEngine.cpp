@@ -64,7 +64,7 @@ bool LiveEffectEngine::setEffectOn(bool isOn) {
        }
     }
 
-    LOGV("plugin here: %s\n", pluginState -> descriptor -> Name);
+//    LOGV("plugin here: %s\n", pluginState -> descriptor -> Name);
     OUT ;
     return success;
 }
@@ -75,8 +75,8 @@ state_t * LiveEffectEngine::loadPlugin() {
 //    ptr = static_cast<state_t *>(malloc(sizeof(state_t)));
     state_t  * ptr = static_cast<state_t *>(malloc(sizeof(state_t)));
     ptr -> sample_rate = mSampleRate ; // am I devops or what
-//    if (plugin_init(&ptr, "libamp.so", 0))
-    if (!plugin_init(ptr, "libnoise.so", 0))
+//    if (plugin_init(&ptr, "libnoise.so", 0))
+    if (!plugin_init(ptr, "libsine.so", 0))
         LOGD("Loaded plugin %s\n", ptr -> descriptor->Name);
 
     OUT ;
@@ -135,6 +135,7 @@ oboe::Result  LiveEffectEngine::openStreams() {
 
     // Load LADSPA Plugin here
 
+    /*
     LOGV("Checking if plugin state is null ...\n");
     if (mFullDuplexPass.duplexPluginState == NULL) {
         LOGV("Assinging plugin\n");
@@ -145,6 +146,7 @@ oboe::Result  LiveEffectEngine::openStreams() {
     }
 
     LOGD("%s loadPlugin [ok]: %s %s\n", __PRETTY_FUNCTION__ , mFullDuplexPass .get_plugin() -> descriptor -> Label, mFullDuplexPass .get_plugin() -> descriptor -> Name);
+     */
     OUT ;
     return result;
 }
@@ -280,4 +282,25 @@ void LiveEffectEngine::onErrorAfterClose(oboe::AudioStream *oboeStream,
     LOGE("%s stream Error after close: %s",
          oboe::convertToText(oboeStream->getDirection()),
          oboe::convertToText(error));
+}
+
+bool LiveEffectEngine::loadLibrary (std::string pluginfile) {
+    SharedLibrary library = SharedLibrary (pluginfile);
+    char * err = library . load() ;
+    if (err == NULL) {
+       libraries.push_front(library);
+        LOGD("Loaded shared library %s\n", pluginfile.c_str());
+       return true ;
+    } else {
+        LOGE("Failed to load shared library %s: %s", pluginfile.c_str(), err);
+        return false ;
+    }
+}
+
+void LiveEffectEngine::loadLibraries () {
+    // So I learnt this today
+    // how cool is this: very
+    for (std::string library : default_plugins) {
+        loadLibrary(library);
+    }
 }

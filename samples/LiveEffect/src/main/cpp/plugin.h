@@ -17,6 +17,8 @@ typedef struct {
     const char * Name, * Label ;
     unsigned long plugin_index ;
     char *client_name;
+    int input_port, output_port ; // mono for now
+    LADSPA_PortDescriptor * portDescriptors ;
     const char **port_names; /* indexed by the LADSPA port index */
     unsigned long num_control_ports; /* input control ports */
     unsigned long num_meter_ports; /* output control ports */
@@ -25,6 +27,7 @@ typedef struct {
     const LADSPA_Descriptor *descriptor;
     void *library;
     unsigned long sample_rate ;
+    int number_of_ports ;
 
     void (*connect_port)(LADSPA_Handle Instance,
                          unsigned long Port,
@@ -35,10 +38,14 @@ typedef struct {
     void (*run_adding)(LADSPA_Handle Instance,
                        unsigned long SampleCount);
 
+    // for passing data to JNI
+    int * jni_control_ports ;
+    float * jni_control_ports_minimums ;
+    float * jni_control_ports_maximums ;
 } state_t;
 
 extern int plugin_init (state_t *state, const char * plugin_file, unsigned long plugin_no) ;
-extern int plugin_connect_ports (state_t * state) ;
+void plugin_connect_ports (state_t * state) ;
 
 #ifdef __cplusplus
 } /* extern "C" */

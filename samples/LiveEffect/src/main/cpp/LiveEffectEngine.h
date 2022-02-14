@@ -23,11 +23,25 @@
 #include <thread>
 #include "FullDuplexPass.h"
 #include "plugin.h"
+#include "SharedLibrary.h"
+#include <list>
 
 class LiveEffectEngine : public oboe::AudioStreamCallback {
 public:
-    state_t *         pluginState = NULL;
+    std:: list <std::string> default_plugins = {
+            "libamp.so",
+            "libnoise.so",
+            "libsine.so",
+            "libdelay.so",
+            "libfilter.so"
+    } ;
+
+    std::list <SharedLibrary> libraries ;
+//    state_t *         pluginState = NULL;
     LiveEffectEngine();
+
+    bool loadLibrary(std::string plugin_file);
+    void loadLibraries();
 
     void setRecordingDeviceId(int32_t deviceId);
     void setPlaybackDeviceId(int32_t deviceId);

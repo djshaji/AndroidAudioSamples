@@ -1,4 +1,5 @@
 #include <android/log.h>
+#include <math.h>
 #include <dlfcn.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -80,6 +81,9 @@ int plugin_init (state_t *state, const char * plugin_file, unsigned long plugin_
     if (state -> descriptor -> activate != NULL) {
         state -> descriptor -> activate (state -> handle);
         LOGD("Plugin activated: %s\n", state -> descriptor -> Name);
+        state -> activate = state -> descriptor -> activate ;
+    } else {
+        state -> activate = NULL ;
     }
 
     /// TODO: Free this memory!
@@ -89,41 +93,51 @@ int plugin_init (state_t *state, const char * plugin_file, unsigned long plugin_
     // Some direct references
     state -> connect_port = state -> descriptor -> connect_port ;
     state -> run = state -> descriptor -> run ;
-    state -> activate = state -> descriptor -> activate ;
     state -> Name = state -> descriptor -> Name ;
     state -> Label = state -> descriptor -> Label ;
 
+    plugin_connect_ports(state);
     OUT ;
     return err;
 }
 
-int plugin_connect_ports (state_t * state) {
-    int err = 0 ;
-    char * error = NULL ;
+void plugin_connect_ports (state_t * state) {
+    state -> input_port = state -> output_port = -1 ;
 
-    // Port names
-    state -> port_names = (const char **)calloc(state->descriptor->PortCount, sizeof(char *));
-    if (!state->port_names)
-        err = 1, error = "memory allocation error";
-
-    /* Allocate memory for the list of control port values. */
+    state->portDescriptors = (LADSPA_PortDescriptor *)calloc
+            ((size_t)state->descriptor->PortCount, sizeof(LADSPA_PortDescriptor));
     state->control_port_values = (LADSPA_Data *)calloc
             ((size_t)state->descriptor->PortCount, sizeof(LADSPA_Data));
-    if (!state->control_port_values)
-        err = 1 ;
+    state->port_names =
+            (const char **)calloc(state->descriptor->PortCount, sizeof(char *));
+    state -> number_of_ports = state -> descriptor -> PortCount ;
+    int i = 0 ;
+    for (i = 0 ; i < state -> descriptor -> PortCount; i ++) {
+        LOGD("\n-------------------------------------------------\n");
+        LOGD("found port [%d]: %s\n", i, state -> descriptor -> PortNames [i]) ;
+        if (LADSPA_IS_PORT_CONTROL(state->descriptor->PortDescriptors[i])) {
+            LOGD("\t\t......... is a control port ... ");
+            state -> control_port_values [i] = state -> descriptor -> PortRangeHints [i] . LowerBound / state -> descriptor -> PortRangeHints [i] . UpperBound ;
+            // hack
+            if (state -> control_port_values [i] == 0 || isnan (state -> control_port_values [i]))
+                state -> control_port_values [i] = 1 ;
+            LOGD("setting a sane default value of %f ", state -> control_port_values [i]);
+            state -> connect_port (state -> handle, i, &state -> control_port_values [i]);
+        }
 
-//    static int controlvout = 0;
-//    static int controlvin = 0;
-//    unsigned long p; /* loop variable for ports */
-//    const LADSPA_PortDescriptor *port; /* loop variable for port descriptors */
+        if (LADSPA_IS_PORT_INPUT(state->descriptor->PortDescriptors[i]) && LADSPA_IS_PORT_AUDIO(state->descriptor->PortDescriptors[i])) {
+            LOGD("\t\t......... is an input port ");
+            state ->input_port = i ;
+        }
+        if (LADSPA_IS_PORT_OUTPUT(state->descriptor->PortDescriptors[i]) && LADSPA_IS_PORT_AUDIO(state->descriptor->PortDescriptors[i])) {
+            LOGD("\t\t......... is an output port ");
+            state -> output_port = i ;
+        }
+        LOGD(" from %f to %f ", state -> descriptor -> PortRangeHints [i] . LowerBound, state -> descriptor -> PortRangeHints [i] . UpperBound);
 
-    /* For our test plugin
-     *  #define AMP_CONTROL 0
-        #define AMP_INPUT1  1
-        #define AMP_OUTPUT1 2
-        #define AMP_INPUT2  3
-        #define AMP_OUTPUT2 4
-     */
+        // set sane default control values
 
-    return err ;
+        state -> port_names [i] = state -> descriptor -> PortNames [i] ;
+        state -> portDescriptors [i] = state -> descriptor -> PortDescriptors [i] ;
+    }
 }

@@ -74,7 +74,7 @@ public:
 
         }*/
 
-        LOGE("[%lu] plugin is %s\n", duplexPluginState -> sample_rate, duplexPluginState -> Label);
+//        LOGE("[%lu] plugin is %s\n", duplexPluginState -> sample_rate, duplexPluginState -> Label);
         // Copy the input samples to the output with a little arbitrary gain change.
 
         // This code assumes the data format for both streams is Float.
@@ -131,16 +131,36 @@ public:
 
 //        LADSPA_Data cutoff = 60 ;
 
-        LADSPA_Data  amplitude = 1 ;
-        duplexPluginState -> connect_port (duplexPluginState -> handle, 0, &amplitude);
+//        LADSPA_Data  amplitude = 1 ;
+//        duplexPluginState -> connect_port (duplexPluginState -> handle, 0, &delay_time);
 //        duplexPluginState -> connect_port (duplexPluginState -> handle, 1, &dry_wet);
-//        state -> descriptor -> connect_port (state -> handle, 2, (LADSPA_Data *) inputData);
-        duplexPluginState -> connect_port (duplexPluginState -> handle, 1, (LADSPA_Data *) outputData);
+//        duplexPluginState -> connect_port (duplexPluginState -> handle, 2, (LADSPA_Data *) inputData);
+//        duplexPluginState -> connect_port (duplexPluginState -> handle, 3, (LADSPA_Data *) outputData);
 
-//        if (state->descriptor->activate)
-//            state->descriptor->activate(state->handle);
+/*
+        for (int i = 0 ; i < duplexPluginState -> number_of_ports ; i ++) {
+            if (duplexPluginState -> input_port != -1)
+                duplexPluginState -> connect_port (duplexPluginState -> handle, duplexPluginState -> input_port, (LADSPA_Data *) inputData);
+            if (duplexPluginState -> output_port != -1)
+                duplexPluginState -> connect_port (duplexPluginState -> handle, duplexPluginState -> output_port, (LADSPA_Data *) outputData);
+//            if (LADSPA_IS_PORT_CONTROL(duplexPluginState -> portDescriptors [i]))
+//                duplexPluginState -> connect_port (duplexPluginState -> handle, i, &duplexPluginState -> control_port_values [i]);
+//            if (LADSPA_IS_PORT_INPUT(duplexPluginState->portDescriptors[i])) {
+//                duplexPluginState->connect_port(duplexPluginState->handle, i,
+//                                                (LADSPA_Data *) inputData);
+//                LOGV("connected input port %d \n", i);
+//            }
+//            if (LADSPA_IS_PORT_OUTPUT(duplexPluginState->portDescriptors[i])) {
+//                duplexPluginState->connect_port(duplexPluginState->handle, i,
+//                                                (LADSPA_Data *) outputData);
+//                LOGV("connected output port %d \n", i);
+//            }
+        }
+
+        if (duplexPluginState->descriptor->activate)
+            duplexPluginState->descriptor->activate(duplexPluginState->handle);
         duplexPluginState -> run (duplexPluginState -> handle, samplesToProcess);
-
+*/
         // If there are fewer input samples then clear the rest of the buffer.
         int32_t samplesLeft = numOutputSamples - numInputSamples;
         for (int32_t i = 0; i < samplesLeft; i++) {
