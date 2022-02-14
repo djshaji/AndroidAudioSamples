@@ -30,6 +30,7 @@ add_library(liveEffect
         jni_bridge.cpp
         plugin.c
         SharedLibrary.cpp
+        Plugin.cpp
         ${SAMPLE_ROOT_DIR}/debug-utils/trace.cpp)
 target_include_directories(liveEffect
     PRIVATE

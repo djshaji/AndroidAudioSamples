@@ -285,22 +285,28 @@ void LiveEffectEngine::onErrorAfterClose(oboe::AudioStream *oboeStream,
 }
 
 bool LiveEffectEngine::loadLibrary (std::string pluginfile) {
+    IN ;
     SharedLibrary library = SharedLibrary (pluginfile);
     char * err = library . load() ;
     if (err == NULL) {
-       libraries.push_front(library);
         LOGD("Loaded shared library %s\n", pluginfile.c_str());
+        library.loadPlugins() ;
+        libraries.push_front(library);
+        OUT ;
        return true ;
     } else {
         LOGE("Failed to load shared library %s: %s", pluginfile.c_str(), err);
+        OUT ;
         return false ;
     }
 }
 
 void LiveEffectEngine::loadLibraries () {
+    IN ;
     // So I learnt this today
     // how cool is this: very
     for (std::string library : default_plugins) {
         loadLibrary(library);
     }
+    OUT ;
 }
