@@ -24,6 +24,7 @@
 #endif
 
 // shaji
+// can also use __FILE__ if want
 #define IN __android_log_print(ANDROID_LOG_VERBOSE, MODULE_NAME, ">> [%d: %s]\n", __LINE__, __PRETTY_FUNCTION__);
 #define OUT __android_log_print(ANDROID_LOG_VERBOSE, MODULE_NAME, "<< [%d: %s]\n", __LINE__, __PRETTY_FUNCTION__);
 

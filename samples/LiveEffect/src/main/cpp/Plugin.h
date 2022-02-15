@@ -3,6 +3,7 @@
 #include <list>
 #include "ladspa.h"
 
+/*
 class PluginControlInit {
     char with_ini;
     LADSPA_Data ini;
@@ -13,6 +14,7 @@ class PluginControlInit {
     char with_max;
     LADSPA_Data max;
 };
+ */
 
 class PluginControl {
     unsigned long port;
@@ -45,7 +47,17 @@ class PluginControl {
         return val;
     }
 
-    PluginControl(LADSPA_Descriptor *descriptor, int _port) {
+    void set_value (float value) {
+        val = &value ;
+    }
+
+    void set_sample_rate (unsigned long rate) {
+        sample_rate = rate ;
+    }
+
+public:
+    PluginControl(const LADSPA_Descriptor *descriptor, int _port) {
+        IN ;
         port = _port ;
 //        ctrl = _control ;
         desc = & descriptor -> PortDescriptors [port] ;
@@ -53,7 +65,7 @@ class PluginControl {
         LADSPA_PortRangeHintDescriptor ladspaPortRangeHintDescriptor = hint -> HintDescriptor;
         LADSPA_Data lower_bound = hint -> LowerBound;
         LADSPA_Data upper_bound = hint -> UpperBound;
-        name = descriptor -> Name ;
+        name = descriptor -> PortNames [port] ;
 
         /* control->min, control->max */
         if (LADSPA_IS_HINT_SAMPLE_RATE(ladspaPortRangeHintDescriptor)) {
@@ -83,7 +95,7 @@ class PluginControl {
         if (LADSPA_IS_HINT_HAS_DEFAULT(ladspaPortRangeHintDescriptor)) {
             /// TODO: Free this memory
             def = (LADSPA_Data *)malloc(sizeof(LADSPA_Data));
-            if (def) {
+            if (def == NULL) {
                 LOGE("Failed to allocate memory!");
                 return ;
                 OUT;
@@ -165,14 +177,10 @@ class PluginControl {
         else
             sel = min;
         *val = sel;
-    }
 
-    void set_value (float value) {
-        val = &value ;
-    }
-
-    void set_sample_rate (unsigned long rate) {
-        sample_rate = rate ;
+        if (! descriptor -> Name || ! name) LOGF ("plugin or control name NULL");
+        LOGD("[plugin] %s: found control %s <%f - %f> default value %f", descriptor ->Name, name, lower_bound, upper_bound, *def);
+        OUT ;
     }
 };
 
@@ -194,10 +202,16 @@ public:
         }
 
         LOGD ("Loaded plugin %s\n", descriptor -> Name) ;
+        setupControls();
     }
 
     void setupControls () {
+        IN ;
         int i = 0 ;
-
+        for (i = 0 ; i < descriptor -> PortCount ; i ++) {
+            PluginControl pluginControl = PluginControl (descriptor, i);
+            pluginControls.push_front(pluginControl);
+        }
+        OUT ;
     }
 };
