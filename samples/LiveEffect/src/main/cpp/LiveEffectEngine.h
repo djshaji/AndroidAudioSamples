@@ -25,6 +25,7 @@
 #include "plugin.h"
 #include "SharedLibrary.h"
 #include <list>
+#include <vector>
 
 class LiveEffectEngine : public oboe::AudioStreamCallback {
 public:
@@ -37,6 +38,7 @@ public:
     } ;
 
     std::list <SharedLibrary> libraries ;
+    std::vector<Plugin> activePlugins ;
 //    state_t *         pluginState = NULL;
     LiveEffectEngine();
 
@@ -95,6 +97,10 @@ private:
     oboe::AudioStreamBuilder *setupPlaybackStreamParameters(
         oboe::AudioStreamBuilder *builder);
     void warnIfNotLowLatency(std::shared_ptr<oboe::AudioStream> &stream);
+
+    void addPluginToRack(SharedLibrary sharedLibrary, unsigned long index);
+
+    void process(LADSPA_Data *inputData, LADSPA_Data *outputData, unsigned long samplesToProcess);
 };
 
 #endif  // OBOE_LIVEEFFECTENGINE_H

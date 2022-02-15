@@ -1,6 +1,6 @@
 #include <logging_macros.h>
 #include <string>
-#include <list>
+#include <vector>
 #include "ladspa.h"
 
 /*
@@ -22,8 +22,6 @@ class PluginControl {
     const char *name;
     const LADSPA_PortDescriptor *desc;
     const LADSPA_PortRangeHint *hint;
-    /* value in the plugin */
-    LADSPA_Data *val;
     /* values selected in the interface */
     LADSPA_Data sel;
     /* value range */
@@ -184,12 +182,19 @@ public:
             LOGD("[plugin] %s: found control %s <%f - %f> default value %f", descriptor ->Name, name, lower_bound, upper_bound, *def);
         OUT ;
     }
+
+/* value in the plugin */
+LADSPA_Data *val;
 };
 
 class Plugin {
 public:
-    std::list <PluginControl> pluginControls ;
+    std::vector<PluginControl> pluginControls ;
     const LADSPA_Descriptor *descriptor ;
+    // mono for now
+    unsigned long inputPort = -1 ;
+    unsigned long outputPort = -1 ;
+    LADSPA_Handle handle ;
     int library_index = 0 ;
     unsigned long input_control_ports ;
     unsigned long output_control_ports ; // meter ports
@@ -209,16 +214,32 @@ public:
         }
 
         LOGD ("Loaded plugin %s\n", descriptor -> Name) ;
+        OUT
+    }
+
+    void activate (unsigned long _sample_rate) {
+        IN
+        sample_rate = _sample_rate ;
+        handle = descriptor -> instantiate (descriptor, sample_rate);
         setupControls();
+        if (descriptor -> activate)
+            descriptor -> activate (handle) ;
         OUT
     }
 
     void setupControls () {
         IN ;
-        int i = 0 ;
-        for (i = 0 ; i < descriptor -> PortCount ; i ++) {
+        for (int i = 0 ; i < descriptor -> PortCount ; i ++) {
             PluginControl pluginControl = PluginControl (descriptor, i);
-            pluginControls.push_front(pluginControl);
+            if (LADSPA_IS_PORT_AUDIO(descriptor -> PortDescriptors [i]) && LADSPA_IS_PORT_INPUT(descriptor -> PortDescriptors [i]))
+                inputPort = i ;
+            if (LADSPA_IS_PORT_AUDIO(descriptor -> PortDescriptors [i]) && LADSPA_IS_PORT_OUTPUT(descriptor -> PortDescriptors [i]))
+                outputPort = i ;
+            else {
+                descriptor -> connect_port (handle, i, pluginControl .val);
+            }
+
+            pluginControls.push_back(pluginControl);
         }
         OUT ;
     }

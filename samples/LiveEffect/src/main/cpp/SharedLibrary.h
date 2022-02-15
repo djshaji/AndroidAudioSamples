@@ -5,17 +5,22 @@
 #include <logging_macros.h>
 #include <cstring>
 #include <string>
-#include <list>
+#include <vector>
 #include "ladspa.h"
 #include "Plugin.h"
 
 class SharedLibrary {
 public:
-    std::list <Plugin> plugins ;
+    std::vector <Plugin> plugins ;
     std::string so_file ;
     int total_plugins = 0 ;
     void * dl_handle = NULL;
+    unsigned long sampleRate ;
     LADSPA_Descriptor_Function descriptorFunction ;
+
+    void setSampleRate (unsigned long _sampleRate) {
+        sampleRate = _sampleRate ;
+    }
 
     SharedLibrary (std::string plugin_file) {
         so_file = plugin_file ;
@@ -53,7 +58,9 @@ public:
         IN ;
         for (int i = 0 ; i < total_plugins ; i ++) {
             Plugin plugin = Plugin (descriptorFunction, i);
-            plugins.push_front(plugin);
+            plugin.setSampleRate(sampleRate) ;
+            plugin.activate(sampleRate);
+            plugins.push_back(plugin);
         }
 
         LOGV("Loaded %d plugins from %s", total_plugins, so_file.c_str());
