@@ -291,6 +291,7 @@ bool LiveEffectEngine::loadLibrary (std::string pluginfile) {
     if (err == NULL) {
         LOGD("Loaded shared library %s\n", pluginfile.c_str());
         library.loadPlugins() ;
+        LOGD("Loaded plugins for %s", pluginfile.c_str());
         libraries.push_front(library);
         OUT ;
        return true ;
@@ -307,6 +308,7 @@ void LiveEffectEngine::loadLibraries () {
     // how cool is this: very
     for (std::string library : default_plugins) {
         loadLibrary(library);
+        LOGV("loaded shared library: %s", library.c_str());
     }
     OUT ;
 }

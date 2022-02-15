@@ -31,7 +31,7 @@ class PluginControl {
     LADSPA_Data max;
     LADSPA_Data *def;
     struct { LADSPA_Data fine; LADSPA_Data coarse; } inc;
-    unsigned long sample_rate;
+    unsigned long sample_rate = 48000;
 
      enum Type {
         FLOAT,
@@ -176,10 +176,12 @@ public:
             sel = *def;
         else
             sel = min;
-        *val = sel;
+        val = &sel;
 
-        if (! descriptor -> Name || ! name) LOGF ("plugin or control name NULL");
-        LOGD("[plugin] %s: found control %s <%f - %f> default value %f", descriptor ->Name, name, lower_bound, upper_bound, *def);
+        if (! def)
+            LOGD("[plugin] %s: found control %s <%f - %f> no default value", descriptor ->Name, name, lower_bound, upper_bound);
+        else
+            LOGD("[plugin] %s: found control %s <%f - %f> default value %f", descriptor ->Name, name, lower_bound, upper_bound, *def);
         OUT ;
     }
 };
@@ -192,9 +194,14 @@ public:
     unsigned long input_control_ports ;
     unsigned long output_control_ports ; // meter ports
     float * control_port_values; /* indexed by the LADSPA port index */
-    unsigned long sample_rate = -1 ;
+    unsigned long sample_rate = 48000 ; // default on my phone
+
+    void setSampleRate (unsigned long _sample_rate) {
+        sample_rate = _sample_rate ;
+    }
 
     Plugin (LADSPA_Descriptor_Function descriptorFunction, int index) {
+        IN
         descriptor = descriptorFunction (index) ;
         if (descriptor == NULL) {
             LOGE ("Failed to load plugin at index %d\n", index);
@@ -203,6 +210,7 @@ public:
 
         LOGD ("Loaded plugin %s\n", descriptor -> Name) ;
         setupControls();
+        OUT
     }
 
     void setupControls () {

@@ -21,6 +21,13 @@
     android:layout_height="match_parent"
     tools:context="com.google.oboe.samples.liveEffect.MainActivity"
     tools:layout_editor_absoluteY="81dp">
+    <ImageView
+        android:layout_width="match_parent"
+        android:src="@drawable/bg"
+        android:layout_height="match_parent">
+
+
+    </ImageView>
 
     <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/apiSelectionGroup"
@@ -37,10 +44,12 @@
             android:id="@+id/apiTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
             android:text="@string/apiSelection" />
 
         <RadioButton
             android:id="@+id/aaudioButton"
+            android:textColor="@android:color/white"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -49,6 +58,7 @@
 
         <RadioButton
             android:id="@+id/slesButton"
+            android:textColor="@android:color/white"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -62,6 +72,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:textColor="@android:color/white"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:text="@string/recording_device"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -70,6 +81,7 @@
     <com.google.oboe.samples.audio_device.AudioDeviceSpinner
         android:id="@+id/recording_devices_spinner"
         android:layout_width="wrap_content"
+        android:textColor="@android:color/white"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
@@ -81,6 +93,7 @@
         android:id="@+id/playDeviceLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_vertical_margin"
@@ -90,6 +103,7 @@
 
     <com.google.oboe.samples.audio_device.AudioDeviceSpinner
         android:id="@+id/playback_devices_spinner"
+        android:textColor="@android:color/white"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
@@ -108,19 +122,5 @@
         android:text="@string/start_effect"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/playback_devices_spinner" />
-
-    <TextView
-        android:id="@+id/status_view_text"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_group_margin"
-        android:lines="6"
-        android:text="@string/status_warning"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_toggle_effect"
-        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

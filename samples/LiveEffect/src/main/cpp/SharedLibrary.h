@@ -55,6 +55,8 @@ public:
             Plugin plugin = Plugin (descriptorFunction, i);
             plugins.push_front(plugin);
         }
+
+        LOGV("Loaded %d plugins from %s", total_plugins, so_file.c_str());
         OUT ;
     }
 };
