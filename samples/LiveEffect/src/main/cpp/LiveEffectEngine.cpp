@@ -22,6 +22,7 @@
 LiveEffectEngine::LiveEffectEngine() {
     IN ;
     assert(mOutputChannelCount == mInputChannelCount);
+    mFullDuplexPass.pluginManager = &pluginManager;
 
 //    pluginState = loadPlugin();
 //    LOGD("%s loadPlugin [ok]: %s %s\n", __PRETTY_FUNCTION__ , pluginState -> descriptor -> Label, pluginState -> descriptor -> Name);
@@ -284,47 +285,3 @@ void LiveEffectEngine::onErrorAfterClose(oboe::AudioStream *oboeStream,
          oboe::convertToText(error));
 }
 
-bool LiveEffectEngine::loadLibrary (std::string pluginfile) {
-    IN ;
-    SharedLibrary library = SharedLibrary (pluginfile);
-    char * err = library . load() ;
-    if (err == NULL) {
-        LOGD("Loaded shared library %s\n", pluginfile.c_str());
-        library.setSampleRate(mSampleRate);
-        library.loadPlugins() ;
-        LOGD("Loaded plugins for %s", pluginfile.c_str());
-        libraries.push_front(library);
-        OUT ;
-       return true ;
-    } else {
-        LOGE("Failed to load shared library %s: %s", pluginfile.c_str(), err);
-        OUT ;
-        return false ;
-    }
-}
-
-void LiveEffectEngine::loadLibraries () {
-    IN ;
-    // So I learnt this today
-    // how cool is this: very
-    for (std::string library : default_plugins) {
-        loadLibrary(library);
-        LOGV("loaded shared library: %s", library.c_str());
-    }
-    OUT ;
-}
-
-void LiveEffectEngine::addPluginToRack (SharedLibrary sharedLibrary, unsigned long index) {
-    activePlugins.push_back(sharedLibrary.plugins.at (index));
-}
-
-void LiveEffectEngine::process (LADSPA_Data * inputData, LADSPA_Data * outputData, unsigned long samplesToProcess) {
-    // How cool is this: very
-    for (Plugin plugin: activePlugins) {
-        if (plugin . inputPort != -1)
-            plugin . descriptor -> connect_port (plugin . handle, plugin . inputPort, (LADSPA_Data *) inputData);
-        if (plugin . outputPort != -1)
-            plugin . descriptor -> connect_port (plugin . handle, plugin . outputPort, (LADSPA_Data *) outputData);
-        plugin . descriptor -> run (plugin. handle, samplesToProcess);
-    }
-}

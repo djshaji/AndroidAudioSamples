@@ -31,6 +31,7 @@ add_library(liveEffect
         plugin.c
         SharedLibrary.cpp
         Plugin.cpp
+        PluginManager.cpp
         ${SAMPLE_ROOT_DIR}/debug-utils/trace.cpp)
 target_include_directories(liveEffect
     PRIVATE

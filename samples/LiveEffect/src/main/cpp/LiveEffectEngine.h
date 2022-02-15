@@ -26,24 +26,13 @@
 #include "SharedLibrary.h"
 #include <list>
 #include <vector>
+#include "PluginManager.h"
 
 class LiveEffectEngine : public oboe::AudioStreamCallback {
 public:
-    std:: list <std::string> default_plugins = {
-            "libamp.so",
-            "libnoise.so",
-            "libsine.so",
-            "libdelay.so",
-            "libfilter.so"
-    } ;
-
-    std::list <SharedLibrary> libraries ;
-    std::vector<Plugin> activePlugins ;
+    PluginManager pluginManager = PluginManager (48000); // default
 //    state_t *         pluginState = NULL;
     LiveEffectEngine();
-
-    bool loadLibrary(std::string plugin_file);
-    void loadLibraries();
 
     void setRecordingDeviceId(int32_t deviceId);
     void setPlaybackDeviceId(int32_t deviceId);
@@ -69,6 +58,7 @@ public:
     bool setAudioApi(oboe::AudioApi);
     bool isAAudioRecommended(void);
     state_t * loadPlugin (void);
+    int32_t           mSampleRate = oboe::kUnspecified;
 
 private:
     FullDuplexPass    mFullDuplexPass;
@@ -77,7 +67,6 @@ private:
     int32_t           mPlaybackDeviceId = oboe::kUnspecified;
     const oboe::AudioFormat mFormat = oboe::AudioFormat::Float; // for easier processing
     oboe::AudioApi    mAudioApi = oboe::AudioApi::AAudio;
-    int32_t           mSampleRate = oboe::kUnspecified;
     const int32_t     mInputChannelCount = oboe::ChannelCount::Stereo;
     const int32_t     mOutputChannelCount = oboe::ChannelCount::Stereo;
 
@@ -98,9 +87,6 @@ private:
         oboe::AudioStreamBuilder *builder);
     void warnIfNotLowLatency(std::shared_ptr<oboe::AudioStream> &stream);
 
-    void addPluginToRack(SharedLibrary sharedLibrary, unsigned long index);
-
-    void process(LADSPA_Data *inputData, LADSPA_Data *outputData, unsigned long samplesToProcess);
 };
 
 #endif  // OBOE_LIVEEFFECTENGINE_H

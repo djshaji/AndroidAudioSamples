@@ -189,6 +189,7 @@ LADSPA_Data *val;
 
 class Plugin {
 public:
+    bool active = true ;
     std::vector<PluginControl> pluginControls ;
     const LADSPA_Descriptor *descriptor ;
     // mono for now
