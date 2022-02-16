@@ -21,9 +21,12 @@
 #include <sys/types.h>
 
 #include "oboe/Oboe.h"
+#include "PluginManager.h"
 
 class FullDuplexStream : public oboe::AudioStreamCallback {
 public:
+    PluginManager * pluginManager = NULL ;
+
     FullDuplexStream() {}
     virtual ~FullDuplexStream() = default;
 
@@ -33,6 +36,10 @@ public:
 
     void setOutputStream(std::shared_ptr<oboe::AudioStream> stream) {
         mOutputStream = stream;
+    }
+
+    void setPluginManager (PluginManager * _pluginManager) {
+        pluginManager = _pluginManager ;
     }
 
     virtual oboe::Result start();

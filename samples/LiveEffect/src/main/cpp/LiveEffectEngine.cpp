@@ -49,12 +49,22 @@ bool LiveEffectEngine::setAudioApi(oboe::AudioApi api) {
 }
 
 bool LiveEffectEngine::setEffectOn(bool isOn) {
-    IN ;
+//    IN ;
     bool success = true;
     if (isOn != mIsEffectOn) {
         if (isOn) {
             success = openStreams() == oboe::Result::OK;
             if (success) {
+                if (pluginManager == NULL) {
+                    LOGF("Creating plugin manager") ;
+                    pluginManager = new PluginManager (mSampleRate) ;
+                    pluginManager->sampleRate = mSampleRate;
+                    pluginManager -> loadLibraries();
+                    pluginManager -> addPluginToRack(4, 0);
+
+                }
+                mFullDuplexPass.setPluginManager(pluginManager);
+                mFullDuplexPass.pluginManager->sampleRate = mSampleRate ;
                 mFullDuplexPass.start();
                 mIsEffectOn = isOn;
             }
@@ -66,7 +76,7 @@ bool LiveEffectEngine::setEffectOn(bool isOn) {
     }
 
 //    LOGV("plugin here: %s\n", pluginState -> descriptor -> Name);
-    OUT ;
+//    OUT ;
     return success;
 }
 

@@ -191,12 +191,18 @@ LADSPA_Data *val;
 
 class Plugin {
 public:
+    void (*run)(LADSPA_Handle Instance,
+                unsigned long SampleCount);
+
     bool active = true ;
+    const char * Name ;
+
     std::vector<PluginControl *> pluginControls ;
     const LADSPA_Descriptor *descriptor ;
     // mono for now
-    unsigned long inputPort = -1 ;
-    unsigned long outputPort = -1 ;
+    int inputPort = -1 ;
+    int outputPort = -1 ;
+    int test = 69 ;
     LADSPA_Handle handle ;
     int library_index = 0 ;
     unsigned long input_control_ports ;
@@ -205,12 +211,18 @@ public:
     unsigned long sample_rate = 48000 ; // default on my phone
 
     void setSampleRate (unsigned long _sample_rate) {
+        IN ;
         sample_rate = _sample_rate ;
+        LOGD("sample rate set at %lu", sample_rate);
+        OUT ;
     }
 
     Plugin (LADSPA_Descriptor_Function descriptorFunction, int index) {
         IN
         descriptor = descriptorFunction (index) ;
+        library_index = index ;
+        Name = descriptor -> Name ;
+        run = descriptor -> run ;
         if (descriptor == NULL) {
             LOGE ("Failed to load plugin at index %d\n", index);
             return ;
@@ -222,7 +234,12 @@ public:
 
     void activate (unsigned long _sample_rate) {
         IN
-        LOGD("going to activate %s", descriptor->Name);
+        LOGD("going to activate %s at %lu", descriptor->Name, sample_rate);
+        if (descriptor == NULL || descriptor -> Name == NULL ) {
+            LOGF ("Plugin is null!") ;
+            OUT ;
+            return ;
+        }
         sample_rate = _sample_rate ;
         handle = descriptor -> instantiate (descriptor, sample_rate);
         if (descriptor -> activate)
@@ -243,11 +260,15 @@ public:
             if (LADSPA_IS_PORT_AUDIO(descriptor -> PortDescriptors [i]) && LADSPA_IS_PORT_OUTPUT(descriptor -> PortDescriptors [i]))
                 outputPort = i ;
             */
-            if (LADSPA_IS_PORT_AUDIO(i)) {
-                if (LADSPA_IS_PORT_INPUT(i))
-                    inputPort = i ;
-                if (LADSPA_IS_PORT_OUTPUT(i))
-                    outputPort = i ;
+            if (LADSPA_IS_PORT_AUDIO(descriptor -> PortDescriptors [i])) {
+                if (LADSPA_IS_PORT_INPUT(descriptor -> PortDescriptors [i])) {
+                    inputPort = i;
+                    LOGD ("[%s] input port %d", Name, i);
+                }
+                if (LADSPA_IS_PORT_OUTPUT(descriptor -> PortDescriptors [i])) {
+                    outputPort = i;
+                    LOGD ("[%s] output port %d", Name, i);
+                }
             }
             else if (LADSPA_IS_PORT_CONTROL(i)) {
                 descriptor -> connect_port (handle, i, pluginControl -> val);

@@ -34,9 +34,12 @@ Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_create(JNIEnv *env,
                                                                jclass) {
     if (engine == nullptr) {
         engine = new LiveEffectEngine();
+        /*
         engine->pluginManager = new PluginManager (engine -> mSampleRate) ;
+        engine -> pluginManager->sampleRate = engine->mSampleRate;
         engine -> pluginManager -> loadLibraries();
         engine ->pluginManager -> addPluginToRack(0, 0);
+         */
     }
 
     return (engine != nullptr) ? JNI_TRUE : JNI_FALSE;
@@ -55,7 +58,7 @@ Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_delete(JNIEnv *env,
 JNIEXPORT jboolean JNICALL
 Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_setEffectOn(
     JNIEnv *env, jclass, jboolean isEffectOn) {
-    IN ;
+//    IN ;
     if (engine == nullptr) {
         LOGE(
             "Engine is null, you must call createEngine before calling this "
@@ -63,7 +66,7 @@ Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_setEffectOn(
         return JNI_FALSE;
     }
 
-    OUT ;
+//    OUT ;
     return engine->setEffectOn(isEffectOn) ? JNI_TRUE : JNI_FALSE;
 }
 

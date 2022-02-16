@@ -25,7 +25,6 @@
 
 class FullDuplexPass : public FullDuplexStream {
 public:
-    PluginManager * pluginManager ;
     virtual oboe::DataCallbackResult
     onBothStreamsReady(
             std::shared_ptr<oboe::AudioStream> inputStream,
@@ -51,7 +50,7 @@ public:
         }
          */
 
-        pluginManager->process((LADSPA_Data *) inputData, static_cast<LADSPA_Data *>(outputData), samplesToProcess);
+        pluginManager->process((LADSPA_Data *) inputData, (LADSPA_Data *) outputData, samplesToProcess);
 
         // If there are fewer input samples then clear the rest of the buffer.
         int32_t samplesLeft = numOutputSamples - numInputSamples;

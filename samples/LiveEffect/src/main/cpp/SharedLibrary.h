@@ -60,6 +60,11 @@ public:
         IN ;
         for (int i = 0 ; i < total_plugins ; i ++) {
             Plugin * plugin = new Plugin (descriptorFunction, i);
+            if (plugin == NULL) {
+                LOGF ("new Plugin returned NULL");
+                OUT ;
+                return ;
+            }
             plugin -> setSampleRate(sampleRate) ;
             plugin -> activate(sampleRate);
             LOGD("Loaded plugin %s: %s @ %d", so_file.c_str(), plugin->descriptor -> Name, i);
