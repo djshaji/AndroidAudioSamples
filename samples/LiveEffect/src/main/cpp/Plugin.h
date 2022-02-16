@@ -190,7 +190,7 @@ LADSPA_Data *val;
 class Plugin {
 public:
     bool active = true ;
-    std::vector<PluginControl> pluginControls ;
+    std::vector<PluginControl *> pluginControls ;
     const LADSPA_Descriptor *descriptor ;
     // mono for now
     unsigned long inputPort = -1 ;
@@ -231,13 +231,13 @@ public:
     void setupControls () {
         IN ;
         for (int i = 0 ; i < descriptor -> PortCount ; i ++) {
-            PluginControl pluginControl = PluginControl (descriptor, i);
+            PluginControl * pluginControl = new PluginControl (descriptor, i);
             if (LADSPA_IS_PORT_AUDIO(descriptor -> PortDescriptors [i]) && LADSPA_IS_PORT_INPUT(descriptor -> PortDescriptors [i]))
                 inputPort = i ;
             if (LADSPA_IS_PORT_AUDIO(descriptor -> PortDescriptors [i]) && LADSPA_IS_PORT_OUTPUT(descriptor -> PortDescriptors [i]))
                 outputPort = i ;
             else {
-                descriptor -> connect_port (handle, i, pluginControl .val);
+                descriptor -> connect_port (handle, i, pluginControl -> val);
             }
 
             pluginControls.push_back(pluginControl);

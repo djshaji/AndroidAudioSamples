@@ -30,7 +30,7 @@
 
 class LiveEffectEngine : public oboe::AudioStreamCallback {
 public:
-    PluginManager pluginManager = PluginManager (48000); // default
+    PluginManager * pluginManager ;
 //    state_t *         pluginState = NULL;
     LiveEffectEngine();
 

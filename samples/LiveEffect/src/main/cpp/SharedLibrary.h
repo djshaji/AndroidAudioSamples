@@ -11,7 +11,7 @@
 
 class SharedLibrary {
 public:
-    std::vector <Plugin> plugins ;
+    std::vector <Plugin *> plugins ;
     std::string so_file ;
     int total_plugins = 0 ;
     void * dl_handle = NULL;
@@ -48,6 +48,8 @@ public:
                 const LADSPA_Descriptor *d = descriptorFunction(total_plugins);
                 if (d == NULL) break;
             }
+
+            LOGI("\t\t... found %d plugins", total_plugins);
         }
 
         OUT ;
@@ -57,9 +59,10 @@ public:
     void loadPlugins () {
         IN ;
         for (int i = 0 ; i < total_plugins ; i ++) {
-            Plugin plugin = Plugin (descriptorFunction, i);
-            plugin.setSampleRate(sampleRate) ;
-            plugin.activate(sampleRate);
+            Plugin * plugin = new Plugin (descriptorFunction, i);
+            plugin -> setSampleRate(sampleRate) ;
+            plugin -> activate(sampleRate);
+            LOGD("Loaded plugin %s: %s @ %d", so_file.c_str(), plugin->descriptor -> Name, i);
             plugins.push_back(plugin);
         }
 

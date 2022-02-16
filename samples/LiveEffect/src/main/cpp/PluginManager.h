@@ -11,6 +11,8 @@ public:
         sampleRate = _sampleRate ;
     }
 
+    PluginManager(PluginManager *pManager);
+
     std:: vector <std::string> default_plugins = {
             "libamp.so",
             "libnoise.so",
@@ -20,8 +22,8 @@ public:
     } ;
 
     unsigned long sampleRate ;
-    std::vector<SharedLibrary> libraries ;
-    std::vector<Plugin> activePlugins ;
+    std::vector<SharedLibrary *> libraries ;
+    std::vector<Plugin *> activePlugins ;
 
     void process(LADSPA_Data *inputData, LADSPA_Data *outputData, unsigned long samplesToProcess);
     bool loadLibrary(std::string plugin_file);

@@ -22,7 +22,7 @@
 LiveEffectEngine::LiveEffectEngine() {
     IN ;
     assert(mOutputChannelCount == mInputChannelCount);
-    mFullDuplexPass.pluginManager = &pluginManager;
+    mFullDuplexPass.pluginManager = pluginManager;
 
 //    pluginState = loadPlugin();
 //    LOGD("%s loadPlugin [ok]: %s %s\n", __PRETTY_FUNCTION__ , pluginState -> descriptor -> Label, pluginState -> descriptor -> Name);
