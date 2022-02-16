@@ -56,6 +56,8 @@ class PluginControl {
 public:
     PluginControl(const LADSPA_Descriptor *descriptor, int _port) {
         IN ;
+        LOGD("Setting up control %d: %s for %s", _port, descriptor -> PortNames [_port], descriptor -> Name);
+//        return;
         port = _port ;
 //        ctrl = _control ;
         desc = & descriptor -> PortDescriptors [port] ;
@@ -220,11 +222,13 @@ public:
 
     void activate (unsigned long _sample_rate) {
         IN
+        LOGD("going to activate %s", descriptor->Name);
         sample_rate = _sample_rate ;
         handle = descriptor -> instantiate (descriptor, sample_rate);
-        setupControls();
         if (descriptor -> activate)
             descriptor -> activate (handle) ;
+        setupControls();
+        LOGD("Activated %s", descriptor -> Name);
         OUT
     }
 
@@ -232,11 +236,20 @@ public:
         IN ;
         for (int i = 0 ; i < descriptor -> PortCount ; i ++) {
             PluginControl * pluginControl = new PluginControl (descriptor, i);
+            // why are we checking port descriptor insteda of port number?
+            /*
             if (LADSPA_IS_PORT_AUDIO(descriptor -> PortDescriptors [i]) && LADSPA_IS_PORT_INPUT(descriptor -> PortDescriptors [i]))
                 inputPort = i ;
             if (LADSPA_IS_PORT_AUDIO(descriptor -> PortDescriptors [i]) && LADSPA_IS_PORT_OUTPUT(descriptor -> PortDescriptors [i]))
                 outputPort = i ;
-            else {
+            */
+            if (LADSPA_IS_PORT_AUDIO(i)) {
+                if (LADSPA_IS_PORT_INPUT(i))
+                    inputPort = i ;
+                if (LADSPA_IS_PORT_OUTPUT(i))
+                    outputPort = i ;
+            }
+            else if (LADSPA_IS_PORT_CONTROL(i)) {
                 descriptor -> connect_port (handle, i, pluginControl -> val);
             }
 

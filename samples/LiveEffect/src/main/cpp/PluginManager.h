@@ -14,11 +14,11 @@ public:
     PluginManager(PluginManager *pManager);
 
     std:: vector <std::string> default_plugins = {
-            "libamp.so",
-            "libnoise.so",
-            "libsine.so",
-            "libdelay.so",
-            "libfilter.so"
+//            "libamp.so",
+            "libnoise.so"
+//            "libsine.so",
+//            "libdelay.so",
+//            "libfilter.so"
     } ;
 
     unsigned long sampleRate ;

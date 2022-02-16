@@ -36,7 +36,7 @@ Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_create(JNIEnv *env,
         engine = new LiveEffectEngine();
         engine->pluginManager = new PluginManager (engine -> mSampleRate) ;
         engine -> pluginManager -> loadLibraries();
-        engine ->pluginManager -> addPluginToRack(1, 0);
+        engine ->pluginManager -> addPluginToRack(0, 0);
     }
 
     return (engine != nullptr) ? JNI_TRUE : JNI_FALSE;
