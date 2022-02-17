@@ -21,7 +21,14 @@
     android:layout_height="match_parent"
     tools:context="com.google.oboe.samples.liveEffect.MainActivity"
     tools:layout_editor_absoluteY="81dp">
+    <ImageView
+        android:scaleType="centerCrop"
+        android:layout_width="match_parent"
+        android:src="@drawable/bg"
+        android:layout_height="match_parent">
 
+
+    </ImageView>
     <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/apiSelectionGroup"
         android:layout_width="fill_parent"
@@ -100,11 +107,15 @@
 
     <Button
         android:id="@+id/button_toggle_effect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="300dp"
+        android:layout_height="80dp"
         android:layout_marginTop="72dp"
         android:gravity="center"
         android:text="@string/start_effect"
+        android:shadowRadius="40"
+        android:textColor="@android:color/white"
+        android:shadowColor="@android:color/white"
+        android:backgroundTint="@android:color/transparent"
         android:textAllCaps="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.53"

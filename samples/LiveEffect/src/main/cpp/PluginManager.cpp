@@ -56,7 +56,7 @@ void PluginManager::process (LADSPA_Data * inputData, LADSPA_Data * outputData, 
 //    LOGD("going to run plugin %s", activePlugins.at(0)->Name);
     for (Plugin *plugin: activePlugins) {
 //        LOGD("running plugin %s", plugin->Name);
-//        LOGD("input port: %d output port: %d", plugin->inputPort, plugin->outputPort);
+        LOGD("input port: %d output port: %d", plugin->inputPort, plugin->outputPort);
         if (!plugin->active)
             continue;
         if (plugin -> inputPort != -1)
@@ -75,7 +75,14 @@ void PluginManager::process (LADSPA_Data * inputData, LADSPA_Data * outputData, 
                 plugin->run(plugin->handle, samplesToProcess);
         }
         */
-        plugin->run(plugin->handle, samplesToProcess);
+
+//        for (int i = 0 ; i < plugin->descriptor->PortCount; i++) {
+//            LOGF("port info: %s [%d] -> %f", plugin->descriptor->PortNames[i], i, plugin->pluginControls[i]->val);
+//        }
+
+        float cutoff = 200 ;
+        plugin->descriptor->connect_port (plugin->handle, 0, &cutoff);
+        plugin->descriptor->run(plugin->handle, samplesToProcess);
     }
 //    OUT
 }

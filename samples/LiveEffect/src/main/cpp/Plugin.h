@@ -45,7 +45,7 @@ class PluginControl {
     }
 
     void set_value (float value) {
-        val = &value ;
+        val = value ;
     }
 
     void set_sample_rate (unsigned long rate) {
@@ -175,7 +175,7 @@ public:
             sel = *def;
         else
             sel = min;
-        val = &sel;
+        val = sel;
 
         if (! def)
             LOGD("[plugin] %s: found control %s <%f - %f> no default value", descriptor ->Name, name, lower_bound, upper_bound);
@@ -184,8 +184,8 @@ public:
         OUT ;
     }
 
-/* value in the plugin */
-LADSPA_Data *val;
+    /* value in the plugin */
+    LADSPA_Data val;
     LADSPA_Data *def;
 };
 
@@ -275,9 +275,11 @@ public:
             }
             else if (LADSPA_IS_PORT_CONTROL(*port)) {
                 if (pluginControl->def) {
-                    descriptor->connect_port(handle, i, pluginControl->def);
-                    LOGD ("[%s] attached control port %d with value %f", descriptor->Name, i,
-                          *pluginControl->def);
+                    float * f = new float ();
+                    f = pluginControl->def ;
+                    LOGF ("%s", descriptor->Name);
+                    descriptor->connect_port(handle, i, f);
+                    LOGD ("[%s] attached control port %d with value %f", descriptor->Name, i, *f);
                 } else {
                     LOGE ("[%s] port %s {%d} is control port but has no default value!", descriptor->Name, descriptor->PortNames [i], i);
                 }

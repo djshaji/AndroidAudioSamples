@@ -60,7 +60,7 @@ public class MainActivity extends Activity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        getActionBar().hide();
         statusText = findViewById(R.id.status_view_text);
         toggleEffectButton = findViewById(R.id.button_toggle_effect);
         toggleEffectButton.setOnClickListener(new View.OnClickListener() {

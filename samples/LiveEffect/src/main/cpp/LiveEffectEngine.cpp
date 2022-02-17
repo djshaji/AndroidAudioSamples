@@ -60,7 +60,7 @@ bool LiveEffectEngine::setEffectOn(bool isOn) {
                     pluginManager = new PluginManager (mSampleRate) ;
                     pluginManager->sampleRate = mSampleRate;
                     pluginManager -> loadLibraries();
-                    pluginManager -> addPluginToRack(4, 0);
+                    pluginManager -> addPluginToRack(0, 0);
 
                 }
                 mFullDuplexPass.setPluginManager(pluginManager);
