@@ -27,7 +27,6 @@ class PluginControl {
     /* value range */
     LADSPA_Data min;
     LADSPA_Data max;
-    LADSPA_Data *def;
     struct { LADSPA_Data fine; LADSPA_Data coarse; } inc;
     unsigned long sample_rate = 48000;
 
@@ -187,6 +186,7 @@ public:
 
 /* value in the plugin */
 LADSPA_Data *val;
+    LADSPA_Data *def;
 };
 
 class Plugin {
@@ -251,7 +251,10 @@ public:
 
     void setupControls () {
         IN ;
+        const LADSPA_PortDescriptor * port ; /* loop variable for port descriptors */
+        port = descriptor -> PortDescriptors ;
         for (int i = 0 ; i < descriptor -> PortCount ; i ++) {
+            port = &descriptor->PortDescriptors[i];
             PluginControl * pluginControl = new PluginControl (descriptor, i);
             // why are we checking port descriptor insteda of port number?
             /*
@@ -260,18 +263,26 @@ public:
             if (LADSPA_IS_PORT_AUDIO(descriptor -> PortDescriptors [i]) && LADSPA_IS_PORT_OUTPUT(descriptor -> PortDescriptors [i]))
                 outputPort = i ;
             */
-            if (LADSPA_IS_PORT_AUDIO(descriptor -> PortDescriptors [i])) {
-                if (LADSPA_IS_PORT_INPUT(descriptor -> PortDescriptors [i])) {
+            if (LADSPA_IS_PORT_AUDIO(*port)) {
+                if (LADSPA_IS_PORT_INPUT(*port)) {
                     inputPort = i;
                     LOGD ("[%s] input port %d", Name, i);
                 }
-                if (LADSPA_IS_PORT_OUTPUT(descriptor -> PortDescriptors [i])) {
+                if (LADSPA_IS_PORT_OUTPUT(*port)) {
                     outputPort = i;
                     LOGD ("[%s] output port %d", Name, i);
                 }
             }
-            else if (LADSPA_IS_PORT_CONTROL(i)) {
-                descriptor -> connect_port (handle, i, pluginControl -> val);
+            else if (LADSPA_IS_PORT_CONTROL(*port)) {
+                if (pluginControl->def) {
+                    descriptor->connect_port(handle, i, pluginControl->def);
+                    LOGD ("[%s] attached control port %d with value %f", descriptor->Name, i,
+                          *pluginControl->def);
+                } else {
+                    LOGE ("[%s] port %s {%d} is control port but has no default value!", descriptor->Name, descriptor->PortNames [i], i);
+                }
+            } else {
+                LOGE("Unknown port type: %s {%d: %s}", descriptor ->Name, i, descriptor -> PortNames [i]);
             }
 
             pluginControls.push_back(pluginControl);

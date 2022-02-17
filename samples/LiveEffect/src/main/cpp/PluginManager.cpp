@@ -52,17 +52,18 @@ void PluginManager::addPluginToRack (unsigned long sharedLibrary, unsigned long 
 
 void PluginManager::process (LADSPA_Data * inputData, LADSPA_Data * outputData, unsigned long samplesToProcess) {
     // How cool is this: very
-    IN
+//    IN
 //    LOGD("going to run plugin %s", activePlugins.at(0)->Name);
     for (Plugin *plugin: activePlugins) {
-        LOGD("running plugin %s", plugin->Name);
-        LOGD("input port: %d output port: %d", plugin->inputPort, plugin->outputPort);
+//        LOGD("running plugin %s", plugin->Name);
+//        LOGD("input port: %d output port: %d", plugin->inputPort, plugin->outputPort);
         if (!plugin->active)
             continue;
         if (plugin -> inputPort != -1)
             plugin -> descriptor -> connect_port (plugin -> handle, plugin -> inputPort, (LADSPA_Data *) inputData);
         if (plugin -> outputPort != -1)
             plugin -> descriptor -> connect_port (plugin -> handle, plugin -> outputPort, (LADSPA_Data *) outputData);
+        /*
         if (plugin -> inputPort == -1 && plugin -> outputPort == -1)
             LOGE ("no ports connected for %s, nothing to do!", plugin->Name);
         else {
@@ -73,8 +74,10 @@ void PluginManager::process (LADSPA_Data * inputData, LADSPA_Data * outputData, 
             } else
                 plugin->run(plugin->handle, samplesToProcess);
         }
+        */
+        plugin->run(plugin->handle, samplesToProcess);
     }
-    OUT
+//    OUT
 }
 
 PluginManager::PluginManager(PluginManager *pManager) {
