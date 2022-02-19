@@ -37,11 +37,11 @@ class PluginControl {
     };
     Type type ;
 
-    LADSPA_Data control_rounding(LADSPA_Data val)
+    LADSPA_Data control_rounding(LADSPA_Data _val)
     {
         if (type == INT || type == TOGGLE)
-            return nearbyintf(val);
-        return val;
+            return nearbyintf(_val);
+        return _val;
     }
 
     void set_value (float value) {
@@ -59,6 +59,7 @@ public:
 //        return;
         port = _port ;
 //        ctrl = _control ;
+        LADSPA_Data default_value = 1; // 1 == no change in signal
         desc = & descriptor -> PortDescriptors [port] ;
         hint = & descriptor -> PortRangeHints [port] ;
         LADSPA_PortRangeHintDescriptor ladspaPortRangeHintDescriptor = hint -> HintDescriptor;
@@ -91,14 +92,21 @@ public:
             max = 1.0;
         }
         /* control->def */
+//        return ;
         if (LADSPA_IS_HINT_HAS_DEFAULT(ladspaPortRangeHintDescriptor)) {
             /// TODO: Free this memory
-            def = (LADSPA_Data *)malloc(sizeof(LADSPA_Data));
-            if (def == NULL) {
-                LOGE("Failed to allocate memory!");
-                return ;
-                OUT;
-            }
+            /// this causes memory corruption
+//            def = (LADSPA_Data *)malloc(sizeof(LADSPA_Data));
+//            def = new float ();
+//            return ;
+
+//            if (def == NULL) {
+//                LOGE("Failed to allocate memory!");
+//                return ;
+//                OUT;
+//            }
+
+            def = &default_value ;
             switch (ladspaPortRangeHintDescriptor & LADSPA_HINT_DEFAULT_MASK) {
                 case LADSPA_HINT_DEFAULT_MINIMUM:
                     *def = lower_bound;
@@ -255,7 +263,9 @@ public:
         port = descriptor -> PortDescriptors ;
         for (int i = 0 ; i < descriptor -> PortCount ; i ++) {
             port = &descriptor->PortDescriptors[i];
+            LOGF ("%s: %s before", descriptor->Name, descriptor->PortNames[i]);
             PluginControl * pluginControl = new PluginControl (descriptor, i);
+            LOGF ("%s: %s after", descriptor->Name, descriptor->PortNames[i]);
             // why are we checking port descriptor insteda of port number?
             /*
             if (LADSPA_IS_PORT_AUDIO(descriptor -> PortDescriptors [i]) && LADSPA_IS_PORT_INPUT(descriptor -> PortDescriptors [i]))
@@ -273,12 +283,17 @@ public:
                     LOGD ("[%s] output port %d", Name, i);
                 }
             }
+            // output and control !!!
+            /// TODO: handle this meter port
+            else if (LADSPA_IS_PORT_OUTPUT(*port)) {
+                outputPort = i;
+                LOGD ("[%s] output port %d", Name, i);
+            }
             else if (LADSPA_IS_PORT_CONTROL(*port)) {
                 if (pluginControl->def) {
                     float * f = new float ();
                     f = pluginControl->def ;
-                    LOGF ("%s", descriptor->Name);
-                    descriptor->connect_port(handle, i, f);
+//                    descriptor->connect_port(handle, i, f);
                     LOGD ("[%s] attached control port %d with value %f", descriptor->Name, i, *f);
                 } else {
                     LOGE ("[%s] port %s {%d} is control port but has no default value!", descriptor->Name, descriptor->PortNames [i], i);
